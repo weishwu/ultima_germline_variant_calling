@@ -75,7 +75,7 @@ params.pangenome_haps = null
 // ===== PROCESSES =====
 
 process SCATTER_INTERVALS {
-    container 'broadinstitute/picard:latest'
+    container 'docker://broadinstitute/picard:latest'
     
     input:
     path interval_list
@@ -105,7 +105,7 @@ process SCATTER_INTERVALS {
 }
 
 process CONVERT_INTERVALS_TO_BED {
-    container 'ubuntu:22.04'
+    container 'docker://ubuntu:22.04'
     
     input:
     path interval_list
@@ -121,7 +121,7 @@ process CONVERT_INTERVALS_TO_BED {
 }
 
 process MAKE_EXAMPLES {
-    container 'ultimagenomics/make_examples:3.2.1'
+    container 'docker://ultimagenomics/make_examples:3.2.1'
     
     input:
     tuple val(shard_id), path(bed)
@@ -169,7 +169,7 @@ process MAKE_EXAMPLES {
 }
 
 process CALL_VARIANTS {
-    container 'ultimagenomics/call_variants:3.0.0'
+    container 'docker://ultimagenomics/call_variants:3.0.0'
     
     input:
     path tfrecords
@@ -228,7 +228,7 @@ EOF
 }
 
 process POST_PROCESS {
-    container 'ultimagenomics/make_examples:3.2.1'
+    container 'docker://ultimagenomics/make_examples:3.2.1'
     publishDir "${params.output_dir}", mode: 'copy'
     
     input:
