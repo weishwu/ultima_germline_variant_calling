@@ -241,9 +241,16 @@ process POST_PROCESS {
     
     script:
     def called_list = called_variants instanceof List ? called_variants.join(',') : called_variants
-    def annotate = !annotation_beds.name.startsWith('NO_FILE') ? "--annotate --bed_annotation_files ${annotation_beds}" : ""
+    
+    // Check if we need annotation (for BED files or dbSNP)
+    def has_annotation_beds = !annotation_beds.name.startsWith('NO_FILE')
+    def has_dbsnp = !dbsnp.name.startsWith('NO_FILE')
+    def needs_annotate = has_annotation_beds || has_dbsnp
+    
+    def annotate_flag = needs_annotate ? "--annotate" : ""
+    def bed_annotation = has_annotation_beds ? "--bed_annotation_files ${annotation_beds}" : ""
     def filter_args = !filters_file.name.startsWith('NO_FILE') ? "--filter --filters_file ${filters_file}" : ""
-    def dbsnp_arg = !dbsnp.name.startsWith('NO_FILE') ? "--dbsnp ${dbsnp}" : ""
+    def dbsnp_arg = has_dbsnp ? "--dbsnp ${dbsnp}" : ""
     
     def gvcf_args = ""
     if (params.make_gvcf && !gvcf_tfrecords.name.startsWith('NO_FILE')) {
@@ -263,7 +270,8 @@ process POST_PROCESS {
         --outfile ${params.sample_name}.vcf.gz \\
         --consider_strand_bias \\
         --flow_order ${params.flow_order} \\
-        ${annotate} \\
+        ${annotate_flag} \\
+        ${bed_annotation} \\
         --qual_filter 1 \\
         ${filter_args} \\
         ${dbsnp_arg} \\
