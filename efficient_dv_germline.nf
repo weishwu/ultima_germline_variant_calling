@@ -322,15 +322,12 @@ workflow {
     )
     
     // Combine shard_id with BED files
-    beds_with_id = scattered_beds
-        .join(
-            CONVERT_INTERVALS_TO_BED.out.bed
-                .flatten()
-                .map { file ->
-                    def shard_id = file.baseName.replaceAll('scattered_', '').replaceAll('.bed', '')
-                    [shard_id, file]
-                }
-        )
+    beds_with_id = CONVERT_INTERVALS_TO_BED.out.bed
+        .flatten()
+        .map { file ->
+            def shard_id = file.baseName.replaceAll('scattered_', '').replaceAll('.bed', '')
+            [shard_id, file]
+        }
     
     // Make examples
     MAKE_EXAMPLES(
