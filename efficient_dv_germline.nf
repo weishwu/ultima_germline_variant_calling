@@ -212,7 +212,7 @@ EOF
     # Add example files to INI
     count=1
     for f in ${tfrecord_list.join(' ')}; do
-        echo "exampleFile \$count = \$f" >> params.ini
+        echo "exampleFile\$count = \$f" >> params.ini
         count=\$((count + 1))
     done
     
