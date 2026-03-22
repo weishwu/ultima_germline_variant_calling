@@ -131,7 +131,7 @@ process MAKE_EXAMPLES {
     path ref_fasta
     path ref_fasta_index
     path ref_dict
-    path pangenome_haps, stageAs: 'haplotypes.cram'
+    path pangenome_haps
     
     output:
     path "${shard_id}.tfrecord.gz", emit: tfrecord
@@ -140,9 +140,10 @@ process MAKE_EXAMPLES {
     script:
     def add_ins_size = params.add_ins_size_channel ? "--add-ins-size-channel" : ""
     def gvcf_args = params.make_gvcf ? "--gvcf --p-error ${params.gvcf_p_error}" : ""
-    def pangenome_args = pangenome_haps.name != 'NO_FILE' ? "--exp-pangenome-haps haplotypes.cram" : ""
-    def mapq = pangenome_haps.name != 'NO_FILE' ? "1" : "${params.min_mapq}"
-    def cgp_mapq = pangenome_haps.name != 'NO_FILE' ? "1" : "${params.cgp_min_mapping_quality}"
+    def use_pangenome = pangenome_haps.name != 'NO_FILE'
+    def pangenome_args = use_pangenome ? "--exp-pangenome-haps ${pangenome_haps}" : ""
+    def mapq = use_pangenome ? "1" : "${params.min_mapq}"
+    def cgp_mapq = use_pangenome ? "1" : "${params.cgp_min_mapping_quality}"
     
     """
     tool \\
