@@ -120,6 +120,8 @@ process CONVERT_INTERVALS_TO_BED {
 
 process MAKE_EXAMPLES {
     container 'docker://ultimagenomics/make_examples:3.2.1'
+    cpus 2
+    memory '4 GB'
     
     input:
     tuple val(shard_id), path(bed)
