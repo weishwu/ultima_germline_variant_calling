@@ -70,9 +70,6 @@ params.gvcf_p_error = 0.005
 params.gvcf_outfile = null
 params.gq_resolution = null
 
-// Pangenome haplotype support (optional)
-params.pangenome_haps = null
-
 // ===== PROCESSES =====
 
 process SCATTER_INTERVALS {
@@ -131,7 +128,6 @@ process MAKE_EXAMPLES {
     path ref_fasta
     path ref_fasta_index
     path ref_dict
-    path pangenome_haps
     
     output:
     path "${shard_id}.tfrecord.gz", emit: tfrecord
@@ -140,10 +136,6 @@ process MAKE_EXAMPLES {
     script:
     def add_ins_size = params.add_ins_size_channel ? "--add-ins-size-channel" : ""
     def gvcf_args = params.make_gvcf ? "--gvcf --p-error ${params.gvcf_p_error}" : ""
-    def use_pangenome = pangenome_haps.name != 'NO_FILE'
-    def pangenome_args = use_pangenome ? "--exp-pangenome-haps ${pangenome_haps}" : ""
-    def mapq = use_pangenome ? "1" : "${params.min_mapq}"
-    def cgp_mapq = use_pangenome ? "1" : "${params.cgp_min_mapping_quality}"
     
     """
     tool \\
@@ -153,21 +145,20 @@ process MAKE_EXAMPLES {
         --output ${shard_id} \\
         --reference ${ref_fasta} \\
         --min-base-quality ${params.min_base_quality} \\
-        --min-mapq ${mapq} \\
+        --min-mapq ${params.min_mapq} \\
         --cgp-min-count-snps ${params.cgp_min_count_snps} \\
         --cgp-min-count-hmer-indels ${params.cgp_min_count_hmer_indels} \\
         --cgp-min-count-non-hmer-indels ${params.cgp_min_count_non_hmer_indels} \\
         --cgp-min-fraction-snps ${params.cgp_min_fraction_snps} \\
         --cgp-min-fraction-hmer-indels ${params.cgp_min_fraction_hmer_indels} \\
         --cgp-min-fraction-non-hmer-indels ${params.cgp_min_fraction_non_hmer_indels} \\
-        --cgp-min-mapping-quality ${cgp_mapq} \\
+        --cgp-min-mapping-quality ${params.cgp_min_mapping_quality} \\
         --max-reads-per-region ${params.max_reads_per_region} \\
         --assembly-min-base-quality ${params.assembly_min_base_quality} \\
         --optimal-coverages ${params.optimal_coverages} \\
         --median-coverage ${params.median_coverage} \\
         ${add_ins_size} \\
-        ${gvcf_args} \\
-        ${pangenome_args}
+        ${gvcf_args}
     """
 }
 
@@ -315,10 +306,6 @@ workflow {
         channel.fromPath(params.filters_file, checkIfExists: true) : 
         channel.value(file('NO_FILE'))
     
-    pangenome_haps_ch = params.pangenome_haps ? 
-        channel.fromPath(params.pangenome_haps, checkIfExists: true) : 
-        channel.value(file('NO_FILE'))
-    
     // Scatter intervals
     SCATTER_INTERVALS(intervals_ch)
     
@@ -352,8 +339,7 @@ workflow {
         cram_index_ch,
         ref_fasta_ch,
         ref_fasta_index_ch,
-        ref_dict_ch,
-        pangenome_haps_ch
+        ref_dict_ch
     )
     
     // Call variants
