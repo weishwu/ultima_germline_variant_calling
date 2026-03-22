@@ -32,6 +32,20 @@ params.filters_file = null
 // Scatter parameters
 params.scatter_count = 40
 
+// Parallelization parameters
+params.make_examples_cpus = 2
+params.make_examples_memory = '8 GB'
+params.make_examples_max_forks = 10  // Run up to 10 MAKE_EXAMPLES in parallel
+params.call_variants_cpus = 8
+params.call_variants_memory = '32 GB'
+params.post_process_cpus = 4
+params.post_process_memory = '16 GB'
+params.scatter_cpus = 2
+params.scatter_memory = '4 GB'
+params.convert_cpus = 1
+params.convert_memory = '2 GB'
+params.convert_max_forks = 20  // Run up to 20 CONVERT processes in parallel
+
 // make_examples parameters
 params.min_base_quality = 5
 params.min_mapq = 5
@@ -74,6 +88,8 @@ params.gq_resolution = null
 
 process SCATTER_INTERVALS {
     container 'docker://broadinstitute/picard:latest'
+    cpus params.scatter_cpus
+    memory params.scatter_memory
     
     input:
     path interval_list
@@ -104,6 +120,9 @@ process SCATTER_INTERVALS {
 
 process CONVERT_INTERVALS_TO_BED {
     container 'docker://ubuntu:22.04'
+    cpus params.convert_cpus
+    memory params.convert_memory
+    maxForks params.convert_max_forks
     
     input:
     path interval_list
@@ -120,6 +139,9 @@ process CONVERT_INTERVALS_TO_BED {
 
 process MAKE_EXAMPLES {
     container 'docker://ultimagenomics/make_examples:3.2.1'
+    cpus params.make_examples_cpus
+    memory params.make_examples_memory
+    maxForks params.make_examples_max_forks
     
     input:
     tuple val(shard_id), path(bed)
@@ -164,6 +186,8 @@ process MAKE_EXAMPLES {
 
 process CALL_VARIANTS {
     container 'docker://ultimagenomics/call_variants:3.0.0'
+    cpus params.call_variants_cpus
+    memory params.call_variants_memory
     
     input:
     path tfrecords
@@ -224,6 +248,8 @@ EOF
 process POST_PROCESS {
     container 'docker://ultimagenomics/make_examples:3.2.1'
     publishDir "${params.output_dir}", mode: 'copy'
+    cpus params.post_process_cpus
+    memory params.post_process_memory
     
     input:
     path called_variants
