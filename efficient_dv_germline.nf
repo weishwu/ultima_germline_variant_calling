@@ -45,6 +45,7 @@ params.cgp_min_mapping_quality = 5
 params.max_reads_per_region = 1500
 params.assembly_min_base_quality = 0
 params.optimal_coverages = 50
+params.median_coverage = 50  // Required when using --optimal-coverages
 params.add_ins_size_channel = true
 
 // call_variants parameters
@@ -162,6 +163,7 @@ process MAKE_EXAMPLES {
         --max-reads-per-region ${params.max_reads_per_region} \\
         --assembly-min-base-quality ${params.assembly_min_base_quality} \\
         --optimal-coverages ${params.optimal_coverages} \\
+        --median-coverage ${params.median_coverage} \\
         ${add_ins_size} \\
         ${gvcf_args} \\
         ${pangenome_args}
