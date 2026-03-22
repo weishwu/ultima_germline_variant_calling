@@ -28,6 +28,7 @@ params.model_onnx = "gs://concordanz/deepvariant/model/germline/v1.14/germline-r
 params.annotation_beds = null  // Comma-separated list of BED files
 params.dbsnp = "gs://gcp-public-data--broad-references/hg38/v0/Homo_sapiens_assembly38.dbsnp138.vcf"
 params.filters_file = null
+params.skip_dbsnp_annotation = false  // Set to true if ug_postproc crashes with dbSNP
 
 // Scatter parameters
 params.scatter_count = 40
@@ -270,7 +271,7 @@ process POST_PROCESS {
     
     // Check if we need annotation (for BED files or dbSNP)
     def has_annotation_beds = !annotation_beds.name.startsWith('NO_FILE')
-    def has_dbsnp = !dbsnp.name.startsWith('NO_FILE')
+    def has_dbsnp = !dbsnp.name.startsWith('NO_FILE') && !params.skip_dbsnp_annotation
     def needs_annotate = has_annotation_beds || has_dbsnp
     
     def annotate_flag = needs_annotate ? "--annotate" : ""
