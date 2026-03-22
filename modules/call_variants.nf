@@ -1,5 +1,6 @@
 process CALL_VARIANTS {
     container 'docker://ultimagenomics/call_variants:3.0.0'
+    publishDir "${params.output_dir}/raw_variants", mode: 'copy', pattern: "call_variants.*.gz"
     
     input:
     path tfrecords

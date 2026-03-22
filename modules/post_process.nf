@@ -1,6 +1,6 @@
 process POST_PROCESS {
     container 'docker://ultimagenomics/make_examples:3.2.1'
-    publishDir "${params.output_dir}", mode: 'copy'
+    publishDir "${params.output_dir}/final_variants", mode: 'copy'
     
     input:
     path called_variants

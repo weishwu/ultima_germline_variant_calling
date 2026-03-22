@@ -59,11 +59,18 @@ nextflow run main.nf \
 
 ## Output Files
 
-The pipeline produces:
+The pipeline produces the following in the `results/` directory (or your specified `--output_dir`):
 
-- `{sample_name}.vcf.gz` - Final variant calls
-- `{sample_name}.g.vcf.gz` - gVCF file (if `--make_gvcf true`)
-- Execution reports (timeline, trace, resource usage)
+### Variant Calls
+- `final_variants/{sample_name}.vcf.gz` - Final filtered and annotated variant calls
+- `final_variants/{sample_name}.g.vcf.gz` - gVCF file (if `--make_gvcf true`)
+- `raw_variants/call_variants.*.gz` - Raw variant calls directly from CALL_VARIANTS (before post-processing)
+
+### Execution Reports
+- `timeline.html` - Execution timeline visualization
+- `report.html` - Resource usage and execution statistics
+- `trace.txt` - Detailed task execution trace
+- `dag.svg` - Workflow execution graph
 
 ## Documentation
 
