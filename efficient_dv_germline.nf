@@ -241,12 +241,12 @@ process POST_PROCESS {
     
     script:
     def called_list = called_variants instanceof List ? called_variants.join(',') : called_variants
-    def annotate = annotation_beds.name != 'NO_FILE' ? "--annotate --bed_annotation_files ${annotation_beds}" : ""
-    def filter_args = filters_file.name != 'NO_FILE' ? "--filter --filters_file ${filters_file}" : ""
-    def dbsnp_arg = dbsnp.name != 'NO_FILE' ? "--dbsnp ${dbsnp}" : ""
+    def annotate = !annotation_beds.name.startsWith('NO_FILE') ? "--annotate --bed_annotation_files ${annotation_beds}" : ""
+    def filter_args = !filters_file.name.startsWith('NO_FILE') ? "--filter --filters_file ${filters_file}" : ""
+    def dbsnp_arg = !dbsnp.name.startsWith('NO_FILE') ? "--dbsnp ${dbsnp}" : ""
     
     def gvcf_args = ""
-    if (params.make_gvcf && gvcf_tfrecords.name != 'NO_FILE') {
+    if (params.make_gvcf && !gvcf_tfrecords.name.startsWith('NO_FILE')) {
         def gvcf_list = gvcf_tfrecords instanceof List ? gvcf_tfrecords.join(',') : gvcf_tfrecords
         def gvcf_out = params.gvcf_outfile ?: "${params.sample_name}.g.vcf.gz"
         gvcf_args = "--gvcf_outfile ${gvcf_out} --nonvariant_site_tfrecord_path ${gvcf_list}"
@@ -296,15 +296,15 @@ workflow {
     // Optional files
     annotation_beds_ch = params.annotation_beds ? 
         channel.fromPath(params.annotation_beds.tokenize(','), checkIfExists: true).collect() : 
-        channel.value(file('NO_FILE'))
+        channel.value(file('NO_FILE_ANNOTATION'))
     
     dbsnp_ch = params.dbsnp ? 
         channel.fromPath(params.dbsnp, checkIfExists: true) : 
-        channel.value(file('NO_FILE'))
+        channel.value(file('NO_FILE_DBSNP'))
     
     filters_ch = params.filters_file ? 
         channel.fromPath(params.filters_file, checkIfExists: true) : 
-        channel.value(file('NO_FILE'))
+        channel.value(file('NO_FILE_FILTERS'))
     
     // Scatter intervals
     SCATTER_INTERVALS(intervals_ch)
@@ -348,7 +348,7 @@ workflow {
     // Collect gvcf tfrecords if making gvcf
     gvcf_tfrecords_ch = params.make_gvcf ? 
         MAKE_EXAMPLES.out.gvcf_tfrecord.collect() : 
-        channel.value(file('NO_FILE'))
+        channel.value(file('NO_FILE_GVCF'))
     
     // Post process
     POST_PROCESS(
