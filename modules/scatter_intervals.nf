@@ -1,5 +1,5 @@
 process SCATTER_INTERVALS {
-    container 'quay.io/biocontainers/picard:3.1.1--hdfd78af_0'
+    container 'docker://broadinstitute/picard:latest'
     
     input:
     path interval_list
@@ -10,7 +10,7 @@ process SCATTER_INTERVALS {
     script:
     """
     mkdir -p out
-    picard IntervalListTools \\
+    java -jar /usr/picard/picard.jar IntervalListTools \\
         SCATTER_COUNT=${params.scatter_count} \\
         SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW \\
         UNIQUE=true \\
