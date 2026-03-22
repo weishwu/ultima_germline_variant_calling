@@ -39,7 +39,7 @@ params.make_examples_max_forks = 10  // Run up to 10 MAKE_EXAMPLES in parallel
 params.call_variants_cpus = 8
 params.call_variants_memory = '32 GB'
 params.post_process_cpus = 4
-params.post_process_memory = '16 GB'
+params.post_process_memory = '32 GB'  // Increased from 16 GB to avoid segfaults
 params.scatter_cpus = 2
 params.scatter_memory = '4 GB'
 params.convert_cpus = 1
@@ -290,6 +290,25 @@ process POST_PROCESS {
     }
     
     """
+    # Verify input files exist and are readable
+    for f in ${called_list.replaceAll(',', ' ')}; do
+        if [ ! -f "\$f" ]; then
+            echo "ERROR: Input file \$f not found" >&2
+            exit 1
+        fi
+        # Check if file is a valid gzip
+        if ! gzip -t "\$f" 2>/dev/null; then
+            echo "ERROR: Input file \$f is not a valid gzip file" >&2
+            exit 1
+        fi
+    done
+    
+    # Verify reference files
+    if [ ! -f "${ref_fasta}.fai" ]; then
+        echo "ERROR: Reference index ${ref_fasta}.fai not found" >&2
+        exit 1
+    fi
+    
     ug_postproc \\
         --infile ${called_list} \\
         --ref ${ref_fasta} \\
