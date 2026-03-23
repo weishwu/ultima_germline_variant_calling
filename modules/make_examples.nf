@@ -2,12 +2,7 @@ process MAKE_EXAMPLES {
     container 'docker://ultimagenomics/make_examples:3.2.1'
     
     input:
-    tuple val(shard_id), path(bed)
-    path cram
-    path cram_index
-    path ref_fasta
-    path ref_fasta_index
-    path ref_dict
+    tuple val(shard_id), path(bed), path(cram), path(cram_index), path(ref_fasta), path(ref_fasta_index), path(ref_dict)
     
     output:
     path "${shard_id}.tfrecord.gz", emit: tfrecord

@@ -137,14 +137,15 @@ workflow {
             [shard_id, file]
         }
     
-    // Make examples
+    // Make examples - combine bed files with reference files
+    make_examples_input = beds_with_id.combine(cram_ch)
+        .combine(cram_index_ch)
+        .combine(ref_fasta_ch)
+        .combine(ref_fasta_index_ch)
+        .combine(ref_dict_ch)
+    
     MAKE_EXAMPLES(
-        beds_with_id,
-        cram_ch,
-        cram_index_ch,
-        ref_fasta_ch,
-        ref_fasta_index_ch,
-        ref_dict_ch
+        make_examples_input
     )
     
     // Call variants
