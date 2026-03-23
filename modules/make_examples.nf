@@ -19,7 +19,6 @@ process MAKE_EXAMPLES {
         --bed ${bed} \\
         --output ${shard_id} \\
         --reference ${ref_fasta} \\
-        --threads ${task.cpus} \\
         --min-base-quality ${params.min_base_quality} \\
         --min-mapq ${params.min_mapq} \\
         --cgp-min-count-snps ${params.cgp_min_count_snps} \\
