@@ -73,6 +73,7 @@ params.gq_resolution = null
 
 // ===== MODULE IMPORTS =====
 
+include { SERIALIZE_MODEL } from './modules/serialize_model.nf'
 include { SCATTER_INTERVALS } from './modules/scatter_intervals.nf'
 include { CONVERT_INTERVALS_TO_BED } from './modules/convert_intervals_to_bed.nf'
 include { MAKE_EXAMPLES } from './modules/make_examples.nf'
@@ -114,6 +115,12 @@ workflow {
         channel.fromPath(params.filters_file, checkIfExists: true) : 
         channel.value(file('NO_FILE_FILTERS'))
     
+    // ===== STEP 1: Serialize ONNX model (once, cached across runs) =====
+    SERIALIZE_MODEL(model_ch)
+    
+    // Extract the serialized model from the tuple output
+    serialized_model_ch = SERIALIZE_MODEL.out.model_with_serialized.map { onnx, serialized -> serialized }
+    
     // Scatter intervals
     SCATTER_INTERVALS(intervals_ch)
     
@@ -148,10 +155,11 @@ workflow {
         make_examples_input
     )
     
-    // Call variants
+    // Call variants with pre-serialized model
     CALL_VARIANTS(
         MAKE_EXAMPLES.out.tfrecord.collect(),
-        model_ch
+        model_ch,
+        serialized_model_ch
     )
     
     // Collect gvcf tfrecords if making gvcf

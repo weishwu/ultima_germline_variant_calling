@@ -2,18 +2,25 @@ process CALL_VARIANTS {
     container 'docker://ultimagenomics/call_variants:3.0.0'
     publishDir "${params.output_dir}/raw_variants", mode: 'copy', pattern: "call_variants.*.gz"
     
+    accelerator 1, type: 'nvidia-tesla-v100'
+    
     input:
     path tfrecords
     path model_onnx
+    path serialized_model
     
     output:
     path "call_variants.*.gz", emit: called_variants
     
     script:
-    def tfrecord_list = tfrecords.collect { it.name }.sort()
+    def tfrecord_list = tfrecords.collect { v -> v.name }.sort()
     def num_examples = tfrecord_list.size()
     
     """
+    echo "Using pre-serialized model: ${serialized_model}"
+    echo "This avoids redundant TensorRT serialization overhead"
+    echo ""
+    
     # Create INI file
     cat > params.ini <<EOF
 [RT classification]
