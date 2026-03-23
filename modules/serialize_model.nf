@@ -32,7 +32,7 @@ exampleFile1 = dummy.tfrecord.gz
 
 [model]
 trtWorkspaceSizeMb = ${params.trt_workspace_size_mb}
-numInferThreadsPerGpu = ${params.num_infer_threads_per_gpu}
+numInferThreadsPerGpu = ${task.cpus}
 useGpus = ${params.use_gpus}
 gpuId = ${params.gpu_id}
 ensembleSize = ${params.ensemble_size}
@@ -42,11 +42,11 @@ sampleHeights = ${params.sample_heights}
 shuffleAllSamples = ${params.shuffle_all_samples ? 1 : 0}
 
 [uncompression]
-numThreads = ${params.num_uncompr_threads}
+numThreads = ${task.cpus}
 bufSizeGb = ${params.uncompr_buf_size_gb}
 
 [conversion]
-numThreads = ${params.num_conversion_threads}
+numThreads = ${task.cpus}
 EOF
 
     # Create a tiny dummy tfrecord just to satisfy the binary

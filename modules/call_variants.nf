@@ -27,7 +27,7 @@ process CALL_VARIANTS {
 onnxFileName = ${model_onnx}
 useSerializedModel = ${params.use_serialized_model}
 trtWorkspaceSizeMB = ${params.trt_workspace_size_mb}
-numInferTreadsPerGpu = ${params.num_infer_threads_per_gpu}
+numInferTreadsPerGpu = ${task.cpus}
 useGPUs = ${params.use_gpus}
 gpuid = ${params.gpu_id}
 
@@ -45,10 +45,10 @@ shuffleAllSamples = ${params.shuffle_all_samples}
 tfrecord = 1
 compressed = 1
 outputInOneFile = 0
-numUncomprThreads = ${params.num_uncompr_threads}
+numUncomprThreads = ${task.cpus}
 uncomprBufSizeGB = ${params.uncompr_buf_size_gb}
 outputFileName = call_variants
-numConversionThreads = ${params.num_conversion_threads}
+numConversionThreads = ${task.cpus}
 numExampleFiles = ${num_examples}
 
 EOF
