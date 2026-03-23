@@ -37,36 +37,50 @@ process SERIALIZE_MODEL {
     echo ""
     
     # Create minimal parameters file to trigger model loading
+    # Use the CORRECT INI format from CALL_VARIANTS process
     cat > test_params.ini <<EOF
-[call_variants]
-model = ${onnx_file}
-use_serialized_model = ${params.use_serialized_model}
-trt_workspace_size_mb = ${params.trt_workspace_size_mb}
-num_infer_threads_per_gpu = 1
-use_gpus = ${params.use_gpus}
-gpu_id = ${params.gpu_id}
-ensemble_size = 1
-random_seed = 1000
-reference_rows = 2
-sample_heights = 10
-num_uncompr_threads = 1
-uncompr_buf_size_gb = 1
-num_conversion_threads = 1
+[RT classification]
+onnxFileName = ${onnx_file}
+useSerializedModel = ${params.use_serialized_model}
+trtWorkspaceSizeMB = ${params.trt_workspace_size_mb}
+numInferTreadsPerGpu = 1
+useGPUs = ${params.use_gpus}
+gpuid = ${params.gpu_id}
+
+[debug]
+logFileFolder = .
+
+[ensemble]
+ensembleSize = 1
+randomSeed = 1000
+referenceRows = 2
+sampleHeights = 10
+shuffleAllSamples = 0
+
+[general]
+tfrecord = 1
+compressed = 1
+outputInOneFile = 0
+numUncomprThreads = 1
+uncomprBufSizeGB = 1
+outputFileName = dummy_output
+numConversionThreads = 1
+numExampleFiles = 1
+exampleFile1 = dummy.tfrecord.gz
 EOF
     
-    # Create minimal dummy input files to satisfy the binary
+    # Create minimal dummy tfrecord file to satisfy the binary
     touch dummy.tfrecord.gz
-    echo -e "sample1" > dummy_samples.txt
     
     # Run call_variants - it will:
     # 1. Initialize and load the model
     # 2. Detect no .serialized file exists
     # 3. Generate the .serialized file from .onnx
-    # 4. Fail when it tries to process (no valid input) - that's OK!
+    # 4. May fail with dummy input - that's OK, serialization happens during init!
     echo "Running call_variants to trigger serialization..."
-    timeout 600 call_variants test_params.ini >serialization.log 2>&1 || {
+    timeout 600 call_variants --param test_params.ini >serialization.log 2>&1 || {
         EXIT_CODE=\$?
-        echo "call_variants exited with code: \$EXIT_CODE (expected - we're just serializing)"
+        echo "call_variants exited with code: \$EXIT_CODE (may be expected)"
     }
     
     # Verify the serialized file was created
@@ -105,6 +119,6 @@ EOF
     fi
     
     # Clean up dummy files (keep serialization.log for debugging)
-    rm -f dummy.tfrecord.gz dummy_samples.txt test_params.ini
+    rm -f dummy.tfrecord.gz test_params.ini
     """
 }
